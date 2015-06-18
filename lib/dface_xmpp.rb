@@ -34,7 +34,7 @@ module DfaceXmpp
   
   def self.normal_chat(from,to,msg, id=nil, attrs="", ext="")
     msg2 = CGI.escapeHTML(msg)
-    mid = id.nil?? $uuid.generate : id
+    mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
     "<message id='#{mid}' to='#{to}@dface.cn' from='#{from}@dface.cn' type='normal' #{escape(attrs)}><body>#{msg2}</body>#{escape_amp(ext)}</message>"
   end
   
@@ -44,7 +44,7 @@ module DfaceXmpp
 
   def self.chat(from,to,msg, id=nil, attrs="", ext="")
     msg2 = CGI.escapeHTML(msg)
-    mid = id.nil?? $uuid.generate : id
+    mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
     attrs += " NOLOG='1' " if (from.to_s == $gfuid || from.to_s == 'scoupon' || msg[0]==':') && attrs.index("NOLOG").nil?
     #TODO: 服务器端发送消息的回执不需要会给模拟发起的用户
     "<message id='#{mid}' to='#{to}@dface.cn' from='#{from}@dface.cn' type='chat' #{escape(attrs)}><body>#{msg2}</body><x xmlns='jabber:x:event'><displayed/></x>#{escape_amp(ext)}</message>"
@@ -57,7 +57,7 @@ module DfaceXmpp
   
   def self.gchat(from,to,msg, id=nil, attrs="", ext="")
     msg2 = CGI.escapeHTML(msg)
-    mid = id.nil?? $uuid.generate : id
+    mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
     "<message id='#{mid}' to='#{to}@dface.cn' from='#{from.to_i}@c.dface.cn' type='groupchat' #{escape(attrs)}><body>#{msg2}</body>#{escape_amp(ext)}</message>"
   end 
 
@@ -69,7 +69,7 @@ module DfaceXmpp
   
   #在聊天室发送系统消息
   def self.send_gchat(from,to,msg, id=nil, attrs="", ext="")
-    mid = id.nil?? $uuid.generate : id
+    mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
     post("rest", Xmpp.gchat(from,to,msg,mid,attrs,ext)) 
     begin
       #这类消息没有发送者，目前同步到客户端有问题
@@ -82,14 +82,14 @@ module DfaceXmpp
 
   def self.gchat2(from,room,to,msg, id=nil, attrs="", ext="")
     msg2 = CGI.escapeHTML(msg)
-    mid = id.nil?? $uuid.generate : id
+    mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
     "<message id='#{mid}' to='#{to}@dface.cn' from='#{room.to_i}@c.dface.cn/#{from}' type='groupchat' #{escape(attrs)}><body>#{msg2}</body>#{escape_amp(ext)}</message>"
   end 
   
   #在聊天室以特定用户身份发消息
   def self.send_gchat2(from,room,to,msg, id=nil, attrs="", ext="")
     return "消息：#{msg}" if ENV["RAILS_ENV"] != "production"
-    mid = id.nil?? $uuid.generate : id
+    mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
     post("rest", Xmpp.gchat2(from,room,to,msg,mid,attrs,ext))
     begin
       gchat = Gchat.new(sid: room, uid: from, tid:to, mid: mid, txt: msg)
@@ -150,7 +150,7 @@ module DfaceXmpp
         cur_ip = ip
         RestClient.post("http://#{ip}:5280/api/room", 
           :roomid  => "4928288" , :message=> "测试一下" ,
-          :uid => "502e6303421aa918ba000001", :mid => $uuid.generate, :log => 0) 
+          :uid => "502e6303421aa918ba000001", :mid => "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}", :log => 0) 
       end
     rescue Exception => e
       raise cur_ip
