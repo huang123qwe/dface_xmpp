@@ -1,5 +1,7 @@
 class DfaceXmpp::UpdateGenerator < Rails::Generators::Base
-  def create_initializer_file
-    create_file "config/initializers/xmpp.rb", "# Add initialization content here"
-  end
+    source_root File.expand_path("../", __FILE__)
+    def copy_initializer_file
+      remove_file "config/initializers/dface_xmpp.rb"
+      copy_file "dface_xmpp.rb", "config/initializers/dface_xmpp.rb"
+    end
 end
