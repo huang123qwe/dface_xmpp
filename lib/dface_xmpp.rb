@@ -1,7 +1,7 @@
 require "dface_xmpp/version"
 
 module DfaceXmpp
-   
+  $xmpp_ips ||= []
   $xmpp_ip_seq=rand($xmpp_ips.size)
   
   def self.cur_xmpp_ip
