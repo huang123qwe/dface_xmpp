@@ -39,7 +39,7 @@ module DfaceXmpp
   end
   
   def self.send_normal(from,to,msg,id=nil, attrs="", ext="")
-    post("rest", Xmpp.normal_chat(from,to,msg,id,attrs,ext)) 
+    post("rest", DfaceXmpp.normal_chat(from,to,msg,id,attrs,ext)) 
   end
 
   def self.chat(from,to,msg, id=nil, attrs="", ext="")
@@ -52,7 +52,7 @@ module DfaceXmpp
   
   #发送个人聊天消息
   def self.send_chat(from,to,msg,id=nil, attrs="", ext="")
-    post("rest", Xmpp.chat(from,to,msg,id,attrs,ext)) 
+    post("rest", DfaceXmpp.chat(from,to,msg,id,attrs,ext)) 
   end
   
   def self.gchat(from,to,msg, id=nil, attrs="", ext="")
@@ -70,13 +70,13 @@ module DfaceXmpp
   #在聊天室发送系统消息
   def self.send_gchat(from,to,msg, id=nil, attrs="", ext="")
     mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
-    post("rest", Xmpp.gchat(from,to,msg,mid,attrs,ext)) 
+    post("rest", DfaceXmpp.gchat(from,to,msg,mid,attrs,ext)) 
     begin
       #这类消息没有发送者，目前同步到客户端有问题
       #gchat = Gchat.new(sid: from.to_i, uid: from, tid:to, mid: mid, txt: msg)
       #gchat.save
     rescue Exception => e
-      Xmpp.error_notify("聊天消息保存失败#{e}")
+      DfaceXmpp.error_notify("聊天消息保存失败#{e}")
     end
   end
 
@@ -90,32 +90,32 @@ module DfaceXmpp
   def self.send_gchat2(from,room,to,msg, id=nil, attrs="", ext="")
     return "消息：#{msg}" if ENV["RAILS_ENV"] != "production"
     mid = id.nil?? "#{Time.now.to_i.to_s(16)}-#{8.times.map{|m| rand(10)}.join}" : id
-    post("rest", Xmpp.gchat2(from,room,to,msg,mid,attrs,ext))
+    post("rest", DfaceXmpp.gchat2(from,room,to,msg,mid,attrs,ext))
     begin
       gchat = Gchat.new(sid: room, uid: from, tid:to, mid: mid, txt: msg)
       gchat.save
     rescue Exception => e
-      Xmpp.error_notify("聊天消息保存失败#{e}")
+      DfaceXmpp.error_notify("聊天消息保存失败#{e}")
     end
   end
   
   def self.send_gchat2_no_log(from,room,to,msg, id=nil, attrs="", ext="")
     return "消息：#{msg}" if ENV["RAILS_ENV"] != "production"
-    post("rest", Xmpp.gchat2(from,room,to,msg,id,attrs,ext))
+    post("rest", DfaceXmpp.gchat2(from,room,to,msg,id,attrs,ext))
   end
 
   def self.send_link_gchat(from,room,to,msg,link=nil, id=nil)
-    return Xmpp.send_gchat2(from,room,to,msg,id) if link.nil?
+    return DfaceXmpp.send_gchat2(from,room,to,msg,id) if link.nil?
     attrs = " NOLOG='1'  url='#{link}' " 
     ext = "<x xmlns='dface.url'>#{link}</x>"
-    Xmpp.send_gchat2(from,room,to,msg,id ,attrs, ext)
+    DfaceXmpp.send_gchat2(from,room,to,msg,id ,attrs, ext)
   end
   
   def self.error_notify(str, uid=$yuanid)
     return unless Rails.env=="production"
     Rails.cache.fetch("XMPP_ERR#{str[0,10]}", :expires_in => 30.minutes) do
       Rails.cache.fetch("XMPP_ERR#{str[0,20]}", :expires_in => 6.hours) do
-        Resque.enqueue(XmppMsg, $gfuid,uid,str)
+        Resque.enqueue(DfaceXmpp, $gfuid,uid,str)
         "1"
       end
     end
@@ -140,7 +140,7 @@ module DfaceXmpp
     androidurl = "http://www.dface.cn/lua/android/#{func}.lua"    
     attrs = " NOLOG='1'  url='#{iosurl}' "
     ext = "<x xmlns='dface.url'>#{androidurl}</x>"
-    Xmpp.send_normal($gfuid, uid, "lua","RPC#{func}",attrs, ext )
+    DfaceXmpp.send_normal($gfuid, uid, "lua","RPC#{func}",attrs, ext )
   end
   
   def self.test
@@ -158,7 +158,7 @@ module DfaceXmpp
   end
   
   def self.test_server_msg(uid)
-    100.times {|x| Xmpp.send_chat($gfuid,uid,x.to_s);sleep 1}
+    100.times {|x| DfaceXmpp.send_chat($gfuid,uid,x.to_s);sleep 1}
   end
   
   def self.test_and_msg
@@ -166,6 +166,6 @@ module DfaceXmpp
     id = "FEED#{Time.now.to_i}"
     attr = " NOLOG='1' NOPUSH='1' SID='6411140' SNAME='NOW PUB&SALOON' "
     ext = "<x xmlns='dface.shop' SID='6411140' SNAME='NOW PUB&SALOON' ></x>"
-    Xmpp.send_chat($gfuid,User.first.id,txt,id,attr,ext)
+    DfaceXmpp.send_chat($gfuid,User.first.id,txt,id,attr,ext)
   end
 end
